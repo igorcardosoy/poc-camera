@@ -1,16 +1,18 @@
 package br.edu.ifsp.arq.camerapoc
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.camera.core.CameraSelector
+import androidx.camera.view.LifecycleCameraController
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.LifecycleOwner
 import br.edu.ifsp.arq.camerapoc.ui.theme.CameraPoCTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,29 +21,35 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CameraPoCTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                CameraPreview(
+                    modifier = Modifier.fillMaxSize(),
+                    context = this,
+                    lifecycleOwner = this
+                )
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
+fun CameraPreview(
+    modifier: Modifier = Modifier,
+    context: Context,
+    lifecycleOwner: LifecycleOwner
+) {
+    AndroidView(
+        modifier = modifier,
+        factory = {
+            val previewView = PreviewView(context)
+            previewView.layoutParams = android.view.ViewGroup.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            val cameraController = LifecycleCameraController(context)
+            cameraController.bindToLifecycle(lifecycleOwner)
+            cameraController.cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            previewView.controller = cameraController
+            previewView
+        }
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    CameraPoCTheme {
-        Greeting("Android")
-    }
 }
