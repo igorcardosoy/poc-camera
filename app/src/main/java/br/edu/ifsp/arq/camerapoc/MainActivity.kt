@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
             CameraPoCTheme {
 
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().padding(45.dp),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     CameraApp()
@@ -57,11 +57,18 @@ fun CameraApp() {
     var photos by remember { mutableStateOf(listOf<Uri>()) }
     var currentPhotoUri by remember { mutableStateOf<Uri?>(null) }
 
+    // carregar fotos já tiradas
+    photos = remember {
+        outputDirectory.listFiles()?.map {
+            FileProvider.getUriForFile(context, "${context.packageName}.provider", it)
+        } ?: listOf()
+    }
+
     val takePictureLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         if (success) {
-            photos = photos + (currentPhotoUri ?: return@rememberLauncherForActivityResult)
+            photos = photos + listOf(currentPhotoUri!!)
         }
     }
 
